@@ -5,6 +5,7 @@ import lk.slife.policyreportexporter.entity.postgres.ProposalDataEntity;
 import lk.slife.policyreportexporter.repository.mariadb.MasterPersonDataRepository;
 import lk.slife.policyreportexporter.repository.mariadb.MasterProposalRepository;
 import lk.slife.policyreportexporter.repository.mariadb.projection.PersonDataView;
+import lk.slife.policyreportexporter.repository.mariadb.projection.ProposalView;
 import lk.slife.policyreportexporter.repository.postgres.ProposalDataRepository;
 import lk.slife.policyreportexporter.service.PolicyPinMappingService;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +27,16 @@ public class PolicyPinMappingServiceImpl implements PolicyPinMappingService {
     @Override
     public List<ProposalDataEntity> getLatestProposalNos() {
 
-        // Collect distinct proposal numbers
-        List<String> orderedProposals = masterProposalRepository.findDistinctProposalNosOrderedByLatest();
+        // Collect distinct proposal numbers with sysDate
+        List<ProposalView> orderedProposals = masterProposalRepository.findDistinctProposalNosOrderedByLatest();
         // Collect distinct pin numbers that are > 10
         List<PersonDataView> allPersonData = masterPersonDataRepository.findDistinctValidPinsWithMaxId();
 
         List<ProposalDataEntity> result = new ArrayList<>();
         log.info("Proposal Pin mapping starting....");
 
-        for (String proposalNo : orderedProposals) {
+        for (ProposalView proposalView : orderedProposals) {
+            String proposalNo = proposalView.proposalNo();
             // Collect matching pin numbers
             List<PersonDataView> matched = allPersonData.stream()
                     .filter(p -> proposalNo.equalsIgnoreCase(p.proposalNo()))
@@ -43,6 +45,7 @@ public class PolicyPinMappingServiceImpl implements PolicyPinMappingService {
             if (!matched.isEmpty()) {
                 ProposalDataEntity proposal = new ProposalDataEntity();
                 proposal.setProposalNo(proposalNo);
+                proposal.setSysDate(proposalView.sysDate());
 
                 List<PinDataEntity> pins = matched.stream()
                         .map(p -> {

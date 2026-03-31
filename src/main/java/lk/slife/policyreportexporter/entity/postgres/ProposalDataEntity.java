@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.List;
 
 @Entity
@@ -22,6 +23,9 @@ public class ProposalDataEntity {
 
     @Column(name = "proposal_no")
     private String proposalNo;
+
+    @Column(name = "sys_date")
+    private Instant sysDate;
 
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PinDataEntity> pins;

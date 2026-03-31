@@ -1,10 +1,10 @@
 package lk.slife.policyreportexporter.service.impl;
 
-import lk.slife.policyreportexporter.entity.mariadb.MasterPersonDataEntity;
 import lk.slife.policyreportexporter.entity.postgres.PinDataEntity;
 import lk.slife.policyreportexporter.entity.postgres.ProposalDataEntity;
 import lk.slife.policyreportexporter.repository.mariadb.MasterPersonDataRepository;
 import lk.slife.policyreportexporter.repository.mariadb.MasterProposalRepository;
+import lk.slife.policyreportexporter.repository.mariadb.projection.PersonDataView;
 import lk.slife.policyreportexporter.repository.postgres.ProposalDataRepository;
 import lk.slife.policyreportexporter.service.PolicyPinMappingService;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +26,18 @@ public class PolicyPinMappingServiceImpl implements PolicyPinMappingService {
     @Override
     public List<ProposalDataEntity> getLatestProposalNos() {
 
+        // Collect distinct proposal numbers
         List<String> orderedProposals = masterProposalRepository.findDistinctProposalNosOrderedByLatest();
-        List<MasterPersonDataEntity> allPersonData = masterPersonDataRepository.findAll();
+        // Collect distinct pin numbers that are > 10
+        List<PersonDataView> allPersonData = masterPersonDataRepository.findDistinctValidPinsWithMaxId();
 
         List<ProposalDataEntity> result = new ArrayList<>();
         log.info("Proposal Pin mapping starting....");
 
         for (String proposalNo : orderedProposals) {
-
-            List<MasterPersonDataEntity> matched = allPersonData.stream()
-                    .filter(p -> isValidProposalNo(p.getProposalNo()) && p.getProposalNo().equalsIgnoreCase(proposalNo) && isPinValid(p.getPin()))
+            // Collect matching pin numbers
+            List<PersonDataView> matched = allPersonData.stream()
+                    .filter(p -> proposalNo.equalsIgnoreCase(p.proposalNo()))
                     .toList();
 
             if (!matched.isEmpty()) {
@@ -45,7 +47,7 @@ public class PolicyPinMappingServiceImpl implements PolicyPinMappingService {
                 List<PinDataEntity> pins = matched.stream()
                         .map(p -> {
                             PinDataEntity pin = new PinDataEntity();
-                            pin.setPin(p.getPin());
+                            pin.setPin(p.pin());
                             pin.setProposal(proposal);
                             return pin;
                         })
@@ -59,23 +61,5 @@ public class PolicyPinMappingServiceImpl implements PolicyPinMappingService {
         proposalDataRepository.saveAll(result);
         log.info("Saved {} proposals", result.size());
         return result;
-    }
-
-    private boolean isValidProposalNo(String proposalNo) {
-        if (proposalNo == null || proposalNo.isBlank()) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isPinValid(String pin) {
-        if (pin == null || pin.isBlank()) {
-            return false;
-        }
-        try {
-            return Integer.parseInt(pin.trim()) > 10;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

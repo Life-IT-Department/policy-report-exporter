@@ -27,6 +27,9 @@ public class ProposalDataEntity {
     @Column(name = "sys_date")
     private Instant sysDate;
 
+    @Column(name = "merged_pdf_available", columnDefinition = "boolean default false")
+    private boolean mergedPdfAvailable;
+
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PinDataEntity> pins;
 }

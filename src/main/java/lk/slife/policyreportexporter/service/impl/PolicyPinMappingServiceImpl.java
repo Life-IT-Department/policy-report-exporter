@@ -146,7 +146,7 @@ public class PolicyPinMappingServiceImpl implements PolicyPinMappingService {
 
         Set<String> folderNames = new HashSet<>(getFolderNames());
 
-        log.info("UPDATE_MERGED_PDF_STATUS: Started. Total proposals={}, total folders={}",
+           log.info("UPDATE_MERGED_PDF_STATUS: Started. Total proposals={}, total folders={}",
                 proposalEntities.size(), folderNames.size());
 
         int updatedCount = 0;

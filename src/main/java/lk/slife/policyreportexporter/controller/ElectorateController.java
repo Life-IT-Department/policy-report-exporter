@@ -21,4 +21,10 @@ public class ElectorateController {
         electorateMappingService.uploadPolicyData();
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/map-electorate")
+    public ResponseEntity<Void> mapElectorate() {
+        electorateMappingService.mapElectorate();
+        return ResponseEntity.ok().build();
+    }
 }

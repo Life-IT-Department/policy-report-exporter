@@ -3,6 +3,7 @@ package lk.slife.policyreportexporter.config;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,12 @@ import java.util.Properties;
 )
 public class PostgresDataSourceConfig {
 
+    @Value("${spring.jpa.postgres.ddl-auto}")
+    private String ddlAuto;
+
+    @Value("${spring.jpa.postgres.show-sql}")
+    private String showSql;
+
     @Primary
     @Bean(name = "postgresDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.postgres")
@@ -45,8 +52,8 @@ public class PostgresDataSourceConfig {
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties jpaProperties = new Properties();
-        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "update");
-        jpaProperties.setProperty("hibernate.show_sql", "false");
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", ddlAuto);
+        jpaProperties.setProperty("hibernate.show_sql", showSql);
         em.setJpaProperties(jpaProperties);
 
         return em;

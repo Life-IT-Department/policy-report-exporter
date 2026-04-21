@@ -3,6 +3,7 @@ package lk.slife.policyreportexporter.config;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,12 @@ import java.util.Properties;
 )
 public class MariaDbDataSourceConfig {
 
+    @Value("${spring.jpa.mariadb.ddl-auto}")
+    private String ddlAuto;
+
+    @Value("${spring.jpa.mariadb.show-sql}")
+    private String showSql;
+
     @Bean(name = "mariadbDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.mariadb")
     public HikariDataSource dataSource() {
@@ -42,8 +49,8 @@ public class MariaDbDataSourceConfig {
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties jpaProperties = new Properties();
-        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "none");
-        jpaProperties.setProperty("hibernate.show_sql", "true");
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", ddlAuto);
+        jpaProperties.setProperty("hibernate.show_sql", showSql);
         em.setJpaProperties(jpaProperties);
 
         return em;
